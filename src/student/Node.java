@@ -1,99 +1,116 @@
 package student;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 
 public class Node {
-	private int[][] state;
-	private int h;
-	private int g;
+	public static final int N = 8;
+	private Queen[] state;
 
-	public Node(int row, int col) {
-		this.state = new int[row][col];
+	public Node() {
+		// generateBoard();
+		state = new Queen[N];
 	}
 
-	// Copy a node
-	public Node(Node node) {
-		this.state = new int[node.state.length][node.state[0].length];
-		for (int i = 0; i < node.state.length; i++) {
-			for (int j = 0; j < node.state[i].length; j++) {
-				state[i][j] = node.state[i][j];
-			}
+	public Node(Queen[] state) {
+		this.state = new Queen[N];
+		for (int i = 0; i < state.length; i++) {
+			this.state[i] = new Queen(state[i].getRow(), state[i].getColumn());
 		}
 	}
 
-	public int getG() {
-		return this.g;
+	public Node(Node n) {
+		this.state = new Queen[N];
+		for (int i = 0; i < N; i++) {
+			Queen qi = n.state[i];
+			this.state[i] = new Queen(qi.getRow(), qi.getColumn());
+		}
 	}
 
-	public int getF() {
-		return this.g + this.h;
+	public void generateBoard() {
+		Random random = new Random();
+		for (int i = 0; i < N; i++) {
+			state[i] = new Queen(random.nextInt(N), i);
+		}
 	}
 
 	public int getH() {
-		return h;
-	}
-
-	public void setH(int h) {
-		this.h = h;
-	}
-
-	public void setG(int g) {
-		this.g = g;
-	}
-
-	public int getRow() {
-		return this.state.length;
-	}
-
-	public int getColumn() {
-		return this.state[0].length;
-	}
-
-	// Get the location of a tile in the board
-	public int[] getLocation(int tile) {
-		int[] result = new int[2];
-		for (int i = 0; i < this.state.length; i++) {
-			for (int j = 0; j < this.state[i].length; j++) {
-				if (this.state[i][j] == tile) {
-					result[0] = i;
-					result[1] = j;
+		int heuristic = 0;
+		// Enter your code here
+		for (int i = 0; i < N - 1; i++) {
+			for (int j = i + 1; j < N; j++) {
+				if (state[i].isConflict(state[j])) {
+					heuristic++;
 				}
 			}
+		}
+		return heuristic;
+	}
+
+	public List<Node> generateAllCandidates() {
+		List<Node> result = new ArrayList<Node>();
+		// Enter your code here
+		for (int i = 0; i < N; i++) {
+			Node n = new Node(this.state);
+			n.state[i].move();
+			result.add(n);
 		}
 		return result;
 	}
 
-	// Update the position of a tile
-	public void updateTile(int row, int col, int value) {
-		this.state[row][col] = value;
-	}
-
-	public int getTile(int row, int column) {
-		return this.state[row][column];
-	}
-
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		else if (obj == null || obj.getClass() != this.getClass()) {
-			return false;
-		} else {
-			Node that = (Node) obj;
-			return Arrays.deepEquals(this.state, that.state);
-		}
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder output = new StringBuilder();
-		for (int i = 0; i < state.length; i++) {
-			for (int j = 0; j < state[i].length; j++) {
-				output.append(state[i][j] + " ");
+	private Node getBestCandidate() {
+		// TODO Auto-generated method stub
+		List<Node> list = this .generateAllCandidates();
+		Node min = list.get(0);
+		for(int i=1;i<list.size();i++) {
+			if(list.get(i).getH()< min.getH()) {
+				min=list.get(i);
 			}
-			output.append("\n");
 		}
-
-		return output.toString();
+		return min;
 	}
 
+	public Node execute(Node initialState) {
+		Node current = initialState;
+		Node neighbor = null;
+		while (true) {
+			current.getBestCandidate();
+			if (neighbor.getH() < current.getH()) {
+				current = neighbor;
+			} else
+				return current;
+		}
+	}
+
+	public Node selectNextRandomCandidate() {
+		// Enter your code here
+		Random r = new Random();
+		int i = r.nextInt(N);
+		int row = r.nextInt(N);
+		Node n = new Node(state);
+		n.state[i].setRow(row);
+		return null;
+	}
+
+	public void displayBoard() {
+		int[][] board = new int[N][N];
+		// set queen position on the board
+		for (int i = 0; i < N; i++) {
+			board[state[i].getRow()][state[i].getColumn()] = 1;
+		}
+		// print board
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				if (board[i][j] == 1) {
+					System.out.print("Q" + " ");
+				} else {
+					System.out.print("-" + " ");
+				}
+			}
+			System.out.println();
+		}
+	}
 }
